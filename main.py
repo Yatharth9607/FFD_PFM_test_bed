@@ -8,8 +8,8 @@ import io
 import plotly.graph_objs as go
 import numpy as np
 import base64
-import CFDSolver
-import PFMSolver
+import CFD_solver
+import PFM_solver
 
 image_filename = 'schneider_LIO_White_RGB.png'
 encoded_image = base64.b64encode(open(image_filename, 'rb').read())
@@ -685,10 +685,10 @@ def cfd_results(n_clicks, v1, T1, theta1, v2, T2, theta2, q_total, b, L, v_l, T_
 
     # Time complexity calculation
     if solver == 'CFD':
-        CFDSolve = CFDSolver.CFD(design_inputs, solver_config)
+        CFDSolve = CFD_solver.CFD(design_inputs, solver_config)
         U_col, V_col, T_col, P_col, timestamp, monitor_data, mass = CFDSolve.Solve_CFD()
     else:
-        PFMSolve = PFMSolver.PFM(design_inputs, solver_config)
+        PFMSolve = PFM_solver.PFM(design_inputs, solver_config)
         U_col, V_col, T_col, P_col, timestamp, monitor_data, mass = PFMSolve.Solve_PFM()
 
     U_col = np.round_(U_col, 4)
