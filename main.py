@@ -8,7 +8,7 @@ import io
 import plotly.graph_objs as go
 import numpy as np
 import base64
-import CFD_solver
+import FFD_solver
 import PFM_solver
 
 image_filename = 'schneider_LIO_White_RGB.png'
@@ -21,7 +21,7 @@ def title_header():
                                        style={'width': 200, 'height': 55.1428571429}),
                               html.Div(style={"flexGrow": 10},
                                        children=[html.H1(
-                                           children='CFD/PFM Test-bed',
+                                           children='FFD/PFM Test-bed',
                                            style={
                                                'textAlign': 'left',
                                                'color': 'white',
@@ -685,7 +685,7 @@ def cfd_results(n_clicks, v1, T1, theta1, v2, T2, theta2, q_total, b, L, v_l, T_
 
     # Time complexity calculation
     if solver == 'CFD':
-        CFDSolve = CFD_solver.CFD(design_inputs, solver_config)
+        CFDSolve = FFD_solver.CFD(design_inputs, solver_config)
         U_col, V_col, T_col, P_col, timestamp, monitor_data, mass = CFDSolve.Solve_CFD()
     else:
         PFMSolve = PFM_solver.PFM(design_inputs, solver_config)
