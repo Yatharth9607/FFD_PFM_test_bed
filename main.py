@@ -839,4 +839,4 @@ def cfd_results(n_clicks, v1, T1, theta1, v2, T2, theta2, q_total, b, L, v_l, T_
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8050)
+    app.run_server(debug=True, host="0.0.0.0", port=8050)
