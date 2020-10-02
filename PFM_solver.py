@@ -14,8 +14,8 @@ k_air = 0.0261  # Thermal conductivity of air (W/m-K)
 g = 9.81  # Gravitational acceleration (m/s^2)
 beta = 0.00341  # Expansion of coefficient of air (1/K)
 
-class PFM:
 
+class PFM:
     def __init__(self, design_inputs, solver_config):
 
         # Input - 1 design variables
@@ -83,7 +83,7 @@ class PFM:
 
         N = self.solver_config[0]
 
-        dx = 1/N
+        dx = 1 / N
 
         V_1 = self.input_1[0]
         V_2 = self.input_2[0]
@@ -93,9 +93,11 @@ class PFM:
         U_top = self.top_wall[0]
         U_bottom = self.bottom_wall[0]
 
-        V_scale = max(abs(V_1), abs(V_2), abs(V_left), abs(V_right), abs(U_top), abs(U_bottom), 1)
+        V_scale = max(
+            abs(V_1), abs(V_2), abs(V_left), abs(V_right), abs(U_top), abs(U_bottom), 1
+        )
 
-        P_scale = abs(rho*V_scale**2)/2
+        P_scale = abs(rho * V_scale ** 2) / 2
 
         T_1 = self.input_1[1]
         T_2 = self.input_2[1]
@@ -103,12 +105,12 @@ class PFM:
 
         DT_scale = max(abs(T_1 - T_2), abs(T_1 - T_ref), abs(T_2 - T_ref), 1)
 
-        q = self.q_total/N
+        q = self.q_total / N
 
-        self.U = np.zeros((N+1, N+2))
-        self.V = np.zeros((N+2, N+1))
-        self.P = np.zeros((N+2, N+2))
-        self.T = T_ref*np.ones((N+2, N+2))
+        self.U = np.zeros((N + 1, N + 2))
+        self.V = np.zeros((N + 2, N + 1))
+        self.P = np.zeros((N + 2, N + 2))
+        self.T = T_ref * np.ones((N + 2, N + 2))
         self.phi = np.zeros((N + 2, N + 2))
 
         self.U_col = np.zeros((N, N))
@@ -147,44 +149,44 @@ class PFM:
         U_bottom = self.bottom_wall[0]
         T_bottom = self.bottom_wall[1]
 
-        V_out = (V_1 + V_2)/2
+        V_out = (V_1 + V_2) / 2
 
         # left wall velocity and temperature
-        self.U[0,:] = 0
-        self.T[0,:] = T_left
-        self.V[0,:] = V_left
+        self.U[0, :] = 0
+        self.T[0, :] = T_left
+        self.V[0, :] = V_left
 
         # right wall velocity and temperature
-        self.U[N,:] = 0
-        self.T[N+1,:] = T_right
-        self.V[N+1,:] = V_right
+        self.U[N, :] = 0
+        self.T[N + 1, :] = T_right
+        self.V[N + 1, :] = V_right
 
         # top wall velocity and temperature
-        self.V[:,N] = 0
-        self.T[:,N+1] = T_top
+        self.V[:, N] = 0
+        self.T[:, N + 1] = T_top
         if V_out != 0:
-            for i in range(int((3/8)*N+1), int((5/8)*N)+1):
-                self.V[i,N] = V_out
-        self.U[:,N+1] = U_top
+            for i in range(int((3 / 8) * N + 1), int((5 / 8) * N) + 1):
+                self.V[i, N] = V_out
+        self.U[:, N + 1] = U_top
 
         # bottom wall velocity and temperature
-        self.V[:,0] = 0
-        self.T[:,0] = T_bottom
+        self.V[:, 0] = 0
+        self.T[:, 0] = T_bottom
         if V_1 != 0:
-            for i in range(int(N/8)+1, int(N/4)+1):
-                self.V[i,0] = V_1
-                self.T[i,0] = T_1
+            for i in range(int(N / 8) + 1, int(N / 4) + 1):
+                self.V[i, 0] = V_1
+                self.T[i, 0] = T_1
         if V_2 != 0:
-            for i in range(int(3/4*N)+1, int(7/8*N)+1):
-                self.V[i,0] = V_2
-                self.T[i,0] = T_2
-        self.U[:,0] = U_bottom
+            for i in range(int(3 / 4 * N) + 1, int(7 / 8 * N) + 1):
+                self.V[i, 0] = V_2
+                self.T[i, 0] = T_2
+        self.U[:, 0] = U_bottom
         if V_1 != 0:
-            for i in range(int(N/8), int(N/4)+1):
-                self.U[i,0] = V_1/(math.tan(theta_1*0.017453293))
+            for i in range(int(N / 8), int(N / 4) + 1):
+                self.U[i, 0] = V_1 / (math.tan(theta_1 * 0.017453293))
         if V_2 != 0:
-            for i in range(int(3/4*N), int(7/8*N)+1):
-                self.U[i,0] = V_2/(math.tan(theta_2*0.017453293))
+            for i in range(int(3 / 4 * N), int(7 / 8 * N) + 1):
+                self.U[i, 0] = V_2 / (math.tan(theta_2 * 0.017453293))
 
     def checkMassBalanceBottom(self, d):
         f = self.opening[0]
@@ -193,9 +195,16 @@ class PFM:
         V_1 = self.input_1[0]
         V_2 = self.input_2[0]
         sum = 0
-        for i in range(1, N+1):
-            sum = sum + np.sign(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1] + d) * (
-                    (2 * abs(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1] + d)) / (f * rho)) ** 0.5
+        for i in range(1, N + 1):
+            sum = (
+                sum
+                + np.sign(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1] + d)
+                * (
+                    (2 * abs(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1] + d))
+                    / (f * rho)
+                )
+                ** 0.5
+            )
 
         massBalanceBottom = (N / 8) * (V_1 + V_2) - sum
 
@@ -232,7 +241,7 @@ class PFM:
 
         PFMOuter_Iter = self.PFM_parameter[0]
         T_iter = self.PFM_parameter[2]
-        for t in range(1, PFMOuter_Iter+1):
+        for t in range(1, PFMOuter_Iter + 1):
             if f == 0:
 
                 self.velPotAll(N, dx)
@@ -253,7 +262,7 @@ class PFM:
 
                 self.monitor_UVP(V_scale, P_scale, N)
 
-        if self.solve_temp == 'Y':
+        if self.solve_temp == "Y":
 
             self.temperature(DT_scale, N)
 
@@ -272,7 +281,15 @@ class PFM:
 
         mass = self.calcMassBalance(N)
 
-        return self.U_col, self.V_col, self.T_col, self.P_col, timestamp, monitor_data, mass
+        return (
+            self.U_col,
+            self.V_col,
+            self.T_col,
+            self.P_col,
+            timestamp,
+            monitor_data,
+            mass,
+        )
 
     def velPotAll(self, N, dx):
         # Velocity Potentials All() ---------------------
@@ -285,18 +302,31 @@ class PFM:
 
             # Bottom and top fictitious halo cells
             for i in range(1, N + 1):
-                self.phi[i, 0] = (1 - omega) * self.phi[i, 0] + omega * (self.phi[i, 1] - dx * self.V[i, 0])
-                self.phi[i, N + 1] = (1 - omega) * self.phi[i, N + 1] + omega * (self.phi[i, N] + dx * self.V[i, N])
+                self.phi[i, 0] = (1 - omega) * self.phi[i, 0] + omega * (
+                    self.phi[i, 1] - dx * self.V[i, 0]
+                )
+                self.phi[i, N + 1] = (1 - omega) * self.phi[i, N + 1] + omega * (
+                    self.phi[i, N] + dx * self.V[i, N]
+                )
 
             # left and right fictitious halo cells
             for j in range(1, N + 1):
-                self.phi[0, j] = (1 - omega) * self.phi[0, j] + omega * (self.phi[1, j] - dx * self.U[0, j])
-                self.phi[N + 1, j] = (1 - omega) * self.phi[N + 1, j] + omega * (self.phi[N, j] + dx * self.U[N, j])
+                self.phi[0, j] = (1 - omega) * self.phi[0, j] + omega * (
+                    self.phi[1, j] - dx * self.U[0, j]
+                )
+                self.phi[N + 1, j] = (1 - omega) * self.phi[N + 1, j] + omega * (
+                    self.phi[N, j] + dx * self.U[N, j]
+                )
 
             # interior cells
             for i in range(1, N + 1):
                 for j in range(1, N + 1):
-                    self.phi[i, j] = (1 - omega) * self.phi[i, j] + (omega / 4) * (self.phi[i + 1, j] + self.phi[i, j + 1] + self.phi[i - 1, j] + self.phi[i, j - 1])
+                    self.phi[i, j] = (1 - omega) * self.phi[i, j] + (omega / 4) * (
+                        self.phi[i + 1, j]
+                        + self.phi[i, j + 1]
+                        + self.phi[i - 1, j]
+                        + self.phi[i, j - 1]
+                    )
 
             # compute interior velocities from velocity potentials
             for i in range(1, N):
@@ -323,7 +353,9 @@ class PFM:
 
         for j in range(N, 0, -1):
             for i in range(N, 0, -1):
-                self.P[i, j] = -(rho / 2) * (self.U_col[i-1, j-1] ** 2 + self.V_col[i-1, j-1] ** 2)
+                self.P[i, j] = -(rho / 2) * (
+                    self.U_col[i - 1, j - 1] ** 2 + self.V_col[i - 1, j - 1] ** 2
+                )
 
     def scalePresBottom(self, N):
         # ScalePressuresBottom() ------------------------
@@ -342,8 +374,14 @@ class PFM:
         f = self.opening[0]
         L = self.opening[1]
         for i in range(1, N + 1):
-            self.V[i, int(N * L)] = np.sign(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1]) * (
-                    (2 * abs(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1])) / (f * rho)) ** 0.5
+            self.V[i, int(N * L)] = (
+                np.sign(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1])
+                * (
+                    (2 * abs(self.P[i, int(N * L)] - self.P[i, int(N * L) + 1]))
+                    / (f * rho)
+                )
+                ** 0.5
+            )
 
     def velPotBottom(self, N, dx):
         # Velocity_Potentials_Bottom() ---------------------------------
@@ -353,24 +391,35 @@ class PFM:
         omega = self.solver_config[1]
         L = self.opening[1]
 
-        for k in range(1, VelPot_Iter + 1):     # number of velocity potential iterations
+        for k in range(1, VelPot_Iter + 1):  # number of velocity potential iterations
 
             # bottom and top fictitious halo cells
             for i in range(1, N + 1):
-                self.phi[i, 0] = (1 - omega) * self.phi[i, 0] + omega * (self.phi[i, 1] - dx * self.V[i, 0])
-                self.phi[i, int(N * L) + 1] = (1 - omega) * self.phi[i, int(N * L) + 1] + omega * (
-                            self.phi[i, int(N * L)] + dx * self.V[i, int(N * L)])
+                self.phi[i, 0] = (1 - omega) * self.phi[i, 0] + omega * (
+                    self.phi[i, 1] - dx * self.V[i, 0]
+                )
+                self.phi[i, int(N * L) + 1] = (1 - omega) * self.phi[
+                    i, int(N * L) + 1
+                ] + omega * (self.phi[i, int(N * L)] + dx * self.V[i, int(N * L)])
 
             # left and right fictitious halo cells
             for j in range(1, int(N * L) + 1):
-                self.phi[0, j] = (1 - omega) * self.phi[0, j] + omega * (self.phi[1, j] - dx * self.U[0, j])
-                self.phi[N + 1, j] = (1 - omega) * self.phi[N + 1, j] + omega * (self.phi[N, j] + dx * self.U[N, j])
+                self.phi[0, j] = (1 - omega) * self.phi[0, j] + omega * (
+                    self.phi[1, j] - dx * self.U[0, j]
+                )
+                self.phi[N + 1, j] = (1 - omega) * self.phi[N + 1, j] + omega * (
+                    self.phi[N, j] + dx * self.U[N, j]
+                )
 
             # interior cells
             for i in range(1, N + 1):
                 for j in range(1, int(N * L) + 1):
                     self.phi[i, j] = (1 - omega) * self.phi[i, j] + (omega / 4) * (
-                            self.phi[i + 1, j] + self.phi[i, j + 1] + self.phi[i - 1, j] + self.phi[i, j - 1])
+                        self.phi[i + 1, j]
+                        + self.phi[i, j + 1]
+                        + self.phi[i - 1, j]
+                        + self.phi[i, j - 1]
+                    )
 
         # compute interior velocities from velocity potentials
         for i in range(1, N):
@@ -393,25 +442,36 @@ class PFM:
 
             # bottom and top fictitious halo cells
             for i in range(1, N + 1):
-                self.phi[i, int(N * L)] = (1 - omega) * self.phi[i, int(N * L)] + omega * (
-                            self.phi[i, int(N * L) + 1] - dx * self.V[i, int(N * L)])
-                self.phi[i, N + 1] = (1 - omega) * self.phi[i, N + 1] + omega * (self.phi[i, N] + dx * self.V[i, N])
+                self.phi[i, int(N * L)] = (1 - omega) * self.phi[
+                    i, int(N * L)
+                ] + omega * (self.phi[i, int(N * L) + 1] - dx * self.V[i, int(N * L)])
+                self.phi[i, N + 1] = (1 - omega) * self.phi[i, N + 1] + omega * (
+                    self.phi[i, N] + dx * self.V[i, N]
+                )
 
             # left and right fictitious halo cells
             for j in range(int(N * L) + 1, N + 1):
-                self.phi[0, j] = (1 - omega) * self.phi[0, j] + omega * (self.phi[1, j] - dx * self.U[0, j])
-                self.phi[N + 1, j] = (1 - omega) * self.phi[N + 1, j] + omega * (self.phi[N, j] + dx * self.U[N, j])
+                self.phi[0, j] = (1 - omega) * self.phi[0, j] + omega * (
+                    self.phi[1, j] - dx * self.U[0, j]
+                )
+                self.phi[N + 1, j] = (1 - omega) * self.phi[N + 1, j] + omega * (
+                    self.phi[N, j] + dx * self.U[N, j]
+                )
 
             # interior cells
             for i in range(1, N + 1):
                 for j in range(int(N * L) + 1, N + 1):
                     self.phi[i, j] = (1 - omega) * self.phi[i, j] + (omega / 4) * (
-                                self.phi[i + 1, j] + self.phi[i, j + 1] + self.phi[i - 1, j] + self.phi[i, j - 1])
+                        self.phi[i + 1, j]
+                        + self.phi[i, j + 1]
+                        + self.phi[i - 1, j]
+                        + self.phi[i, j - 1]
+                    )
 
         # compute interior velocities from velocity potentials
 
         for i in range(1, N):
-            for j in range(int(N * L) + 1, N+1):
+            for j in range(int(N * L) + 1, N + 1):
                 self.U[i, j] = (1 / dx) * (self.phi[i + 1, j] - self.phi[i, j])
 
         for i in range(1, N + 1):
@@ -425,9 +485,18 @@ class PFM:
         for k in range(1, Temp_Iter + 1):
             for i in range(1, N + 1):
                 for j in range(1, N + 1):
-                    b = max(self.U[i - 1, j], 0) * self.T[i - 1, j] + max(self.V[i, j - 1], 0) * self.T[i, j - 1] - min(self.U[i, j], 0) * self.T[
-                        i + 1, j] - min(self.V[i, j], 0) * self.T[i, j + 1]
-                    c = max(self.U[i, j], 0) + max(self.V[i, j], 0) - min(self.U[i - 1, j], 0) - min(self.V[i, j - 1], 0)
+                    b = (
+                        max(self.U[i - 1, j], 0) * self.T[i - 1, j]
+                        + max(self.V[i, j - 1], 0) * self.T[i, j - 1]
+                        - min(self.U[i, j], 0) * self.T[i + 1, j]
+                        - min(self.V[i, j], 0) * self.T[i, j + 1]
+                    )
+                    c = (
+                        max(self.U[i, j], 0)
+                        + max(self.V[i, j], 0)
+                        - min(self.U[i - 1, j], 0)
+                        - min(self.V[i, j - 1], 0)
+                    )
                     self.T[i, j] = b / c
 
             self.monitor_temp(DT_scale, N)
@@ -447,15 +516,15 @@ class PFM:
         mon_j = int(N * self.monitor_y)
 
         # Save timestep data
-        self.monitor_T.append((self.T[mon_i, mon_j] - T_ref)/ DT_scale)
+        self.monitor_T.append((self.T[mon_i, mon_j] - T_ref) / DT_scale)
 
     def output(self, N):
-        for i in range(1, N+1):
-            for j in range(1, N+1):
-                self.U_col[i-1, j-1] = (self.U[i-1,j] + self.U[i,j]) / 2
-                self.V_col[i-1, j-1] = (self.V[i,j-1] + self.V[i,j]) / 2
-                self.T_col[i-1, j-1] = self.T[i,j]
-                self.P_col[i-1, j-1] = self.P[i,j]
+        for i in range(1, N + 1):
+            for j in range(1, N + 1):
+                self.U_col[i - 1, j - 1] = (self.U[i - 1, j] + self.U[i, j]) / 2
+                self.V_col[i - 1, j - 1] = (self.V[i, j - 1] + self.V[i, j]) / 2
+                self.T_col[i - 1, j - 1] = self.T[i, j]
+                self.P_col[i - 1, j - 1] = self.P[i, j]
 
         self.U_col = np.transpose(self.U_col)
         self.V_col = np.transpose(self.V_col)
@@ -466,5 +535,7 @@ class PFM:
         mass = np.zeros((N, N))
         for i in range(1, N + 1):
             for j in range(1, N + 1):
-                mass[i - 1, j - 1] = self.U[i, j] + self.V[i, j] - self.U[i - 1, j] - self.V[i, j - 1]
+                mass[i - 1, j - 1] = (
+                    self.U[i, j] + self.V[i, j] - self.U[i - 1, j] - self.V[i, j - 1]
+                )
         return mass
